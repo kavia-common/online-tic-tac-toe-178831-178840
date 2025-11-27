@@ -6,6 +6,7 @@ import GameBoard from "./components/GameBoard";
 import StatusBar from "./components/StatusBar";
 import HistoryPanel from "./components/HistoryPanel";
 import { Api } from "./lib/api";
+import { getBackendHealthUrl } from "./lib/api";
 import { subscribeToState } from "./lib/realtime";
 
 // PUBLIC_INTERFACE
@@ -35,6 +36,21 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  // Backend healthcheck (non-blocking, console-only)
+  useEffect(() => {
+    const url = getBackendHealthUrl();
+    // Fire and forget; do not impact UI
+    fetch(url, { method: "GET" })
+      .then(() => {
+        // ok
+      })
+      .catch((err) => {
+        // Likely CORS or backend down; log for developer visibility
+        // eslint-disable-next-line no-console
+        console.warn("Backend healthcheck failed:", err?.message || err);
+      });
+  }, []);
 
   // Try to infer role if session exists by fetching room info
   useEffect(() => {
